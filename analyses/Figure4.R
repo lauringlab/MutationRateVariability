@@ -3,6 +3,7 @@ library(extraDistr)
 library(data.table)
 library(bench)
 source("analyses/ConditionalProbability.R")
+source("analyses/Figure1.R")
 
 ## Figure 4A: Extinction threshold by index of dispersion ##
 
@@ -19,7 +20,7 @@ overdispersion_index <- seq(1.1, 2, by = 0.1)
 fec_plot <- expand_grid(mean_mut_rate, overdispersion_index) %>%
   mutate(shape = shape_gpois(mean_mut_rate, overdispersion_index),
          rate = shape/mean_mut_rate,
-         fecundity = log10(fecundity(shape, rate)))
+         fecundity = fecundity(shape, rate))
 
 #plot thresholds
 ggplot(fec_plot, aes(x = fecundity,
@@ -31,12 +32,14 @@ ggplot(fec_plot, aes(x = fecundity,
                                          y = mean_mut_rate,
                                          group = 1),
             color = "black") +
-  theme_minimal() +
   scale_y_continuous(breaks = c(2,4,6,8,10)) +
   scale_color_gradient(low = "#fcbba1", high = "#cb181d") +
-  labs(x = "Fecundity (log10)", y = "Mean mutation rate",
-       color = "Overdispersion index",
-       title = "Extinction threshold")
+  scale_x_log10(labels = label_log()) +
+  labs(x = "fecundity", y = "mean mutation rate",
+       color = "index of dispersion") +
+  annotate(geom = "text", x = 20, y = 9, label = "Viral extinction", fontface = "italic") +
+  annotate(geom = "text", x = 1500, y = 4, label = "Viral survival", fontface = "italic") +
+  theme_classic()
 
 
 ## Figure 4B: time to extinction simulations ##
@@ -147,12 +150,12 @@ extinction_gens_comb <- tibble(
 
 #Plot simulation results
 #extinction_gens_comb <- readRDS("data/extinction_time_sim.rds")
-ggplot(extinction_gens_comb, aes(x = o_index, y = extinction_gen, group = o_index)) +
+ggplot(extinction_gens_comb, aes(x = o_index, y = extinction_gen, group = o_index, color = o_index)) +
   geom_boxplot() +
   scale_y_continuous(limits = c(0, 150)) +
   scale_x_continuous(breaks = c(1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6)) +
-  theme_minimal() +
-  labs(title = "Time to extinction by index of dispersion, U = 3",
-       subtitle = "Simulation of 100 populations per index",
-       x = "index of dispersion",
-       y = "time to extinction (generations)")
+  scale_color_gradient(low = "#fcbba1", high = "#cb181d") +
+  theme_classic() +
+  labs(x = "index of dispersion",
+       y = "time to extinction") +
+  theme(legend.position = "none")

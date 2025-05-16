@@ -3,10 +3,10 @@ library(scales)
 
 fec_plot_poisson <- tibble(
   mean_mut_rate = c(1:10),
-  fecundity = log10(1/exp(-mean_mut_rate))
+  fecundity = 1/exp(-mean_mut_rate)
 )
 
-ggplot(fec_plot_poisson, aes(x = 10^fecundity,
+ggplot(fec_plot_poisson, aes(x = fecundity,
                      y = mean_mut_rate)) +
   geom_line() +
   theme_minimal() +
