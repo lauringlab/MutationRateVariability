@@ -41,7 +41,7 @@ run_parameter_combo <- function(spz, fc, mmr, f){
   extinction_gens <- list()
   for(i in 1:length(shapes)){
     print(paste("Running sim with shape = ", shapes[i]))
-    extinction_gens[[i]] <- run_sim_extinction(100, shapes[i], shapes[i]/3, f, fc, 200)
+    extinction_gens[[i]] <- run_sim_extinction(100, population0, shapes[i], shapes[i]/3, f, fc, 200)
     print(mean(extinction_gens[[i]]))
 
   }
@@ -116,7 +116,7 @@ mu_sim_gamma <- function(sim, initial_pop, max_generations, fecundity, shape, ra
 }
 
 #function to run simulations for a given shape/rate and record time to extinction
-run_sim_extinction <- function(n_sims, shape, rate, fecundity, s, max_generations){
+run_sim_extinction <- function(n_sims, population0, shape, rate, fecundity, s, max_generations){
   sim_death <- c()
   for(i in 1:n_sims){
     sim <- mu_sim_gamma(i, population0, max_generations, fecundity, shape, rate, s)
