@@ -1,5 +1,6 @@
 library(tidyverse)
 library(gridExtra)
+library(scales)
 
 ## Figure 3A: IAV growth curve ##
 gc <- read_csv("data/audrey_growthcurve_rep.csv") %>%
