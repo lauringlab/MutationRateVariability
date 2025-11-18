@@ -14,7 +14,7 @@ fecundity <- function(shape, rate){
 
 #mean mutation rates and indices of dispersion to plot
 mean_mut_rate <- 1:10
-overdispersion_index <- seq(1.1, 2, by = 0.1)
+overdispersion_index <- c(1.16, 1.24)
 
 #calculate thresholds
 fec_plot <- expand_grid(mean_mut_rate, overdispersion_index) %>%
@@ -25,24 +25,19 @@ fec_plot <- expand_grid(mean_mut_rate, overdispersion_index) %>%
 #plot thresholds
 ggplot(fec_plot, aes(x = fecundity,
                      y = mean_mut_rate,
-                     group = overdispersion_index,
-                     color = overdispersion_index)) +
+                     group = overdispersion_index)) +
   geom_line() +
   geom_line(data = fec_plot_poisson, aes(x = fecundity,
                                          y = mean_mut_rate,
                                          group = 1),
             color = "black") +
   scale_y_continuous(breaks = c(2,4,6,8,10)) +
-  scale_color_gradient(low = "#fcbba1", high = "#cb181d") +
   scale_x_log10(labels = label_log()) +
   labs(x = "fecundity", y = "mean mutation rate",
        color = "index of dispersion") +
   annotate(geom = "text", x = 20, y = 9, label = "Viral extinction", fontface = "italic") +
   annotate(geom = "text", x = 1500, y = 4, label = "Viral survival", fontface = "italic") +
   theme_classic()
-
-
-## Figure 4B: time to extinction simulations ##
 
 #initial population with 100 individuals, no mutations, fitness = 1
 population0 <- tibble(
@@ -66,7 +61,7 @@ progeny_gamma <- function(pop, fecundity, shape, rate, s){
     progeny_fitness = (1-s)^progeny_mu
     non_zero_fitness <- progeny_fitness > 0
     new_pop[[i]] <- list(mu = progeny_mu[non_zero_fitness],
-                          fitness = progeny_fitness[non_zero_fitness])
+                         fitness = progeny_fitness[non_zero_fitness])
   }
   return(rbindlist(new_pop))
 }
@@ -78,7 +73,7 @@ mu_sim_gamma <- function(sim, initial_pop, n_generations, fecundity, shape, rate
   if(sim %% 10 == 0){
     print(paste("Shape:", shape, "Sim:", sim))
   }
-
+  
   #initialize population
   generations = 1:n_generations
   pop_results <- list()
@@ -112,7 +107,7 @@ mu_sim_gamma <- function(sim, initial_pop, n_generations, fecundity, shape, rate
 }
 
 #get shape parameters for mean of 3, oi of 1.0 to 1.6
-shapes <- shape_gpois(3, seq(1.0, 1.6, by = 0.1))
+shapes <- shape_gpois(3, c(1, 1.16,1.24))
 
 #set shape for mean=3, oi=0 to arbitrarily large value bc can't actually
 #calculate shape when oi=0
@@ -136,27 +131,29 @@ for(i in 1:length(shapes)){
   print(paste("Running sim with shape = ", shapes[i]))
   extinction_gens[[i]] <- run_sim_extinction(100, shapes[i], shapes[i]/3)
   print(mean(extinction_gens[[i]]))
-
+  
 }
 
 #Combine simulation results into a tibble
 extinction_gens_comb <- tibble(
-  o_index = sort(rep(seq(1.0, 1.6, 0.1), 100)),
+  o_index = sort(rep(c(1.0,1.16,1.24), 100)),
   extinction_gen = unlist(extinction_gens)
 )
 
 #Save results
-#saveRDS(extinction_gens_comb, "data/extinction_time_sim.rds")
-extinction_gens_comb <- readRDS("data/extinction_time_sim.rds")
+#saveRDS(extinction_gens_comb, "data/extinction_time_sim_extra.rds")
+extinction_summary <- extinction_gens_comb %>% 
+  group_by(o_index) %>% 
+  summarize(mean_extinction = mean(extinction_gen))
 
-#Plot simulation results
-#extinction_gens_comb <- readRDS("data/extinction_time_sim.rds")
-ggplot(extinction_gens_comb, aes(x = o_index, y = extinction_gen, group = o_index, color = o_index)) +
+ggplot(extinction_gens_comb, aes(x = o_index, y = extinction_gen, group = o_index)) +
   geom_boxplot() +
-  scale_y_continuous(limits = c(0, 150)) +
-  scale_x_continuous(breaks = c(1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6)) +
-  scale_color_gradient(low = "#fcbba1", high = "#cb181d") +
+  scale_y_continuous(limits = c(0, 50)) +
+  scale_x_continuous(breaks = c(1.0, 1.16, 1.24)) +
+  annotate("text", x = c(1, 1.16, 1.24), y = 35,
+           label = extinction_summary$mean_extinction) +
   theme_classic() +
   labs(x = "index of dispersion",
        y = "time to extinction") +
   theme(legend.position = "none")
+

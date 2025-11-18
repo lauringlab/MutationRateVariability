@@ -8,6 +8,12 @@ shape_gpois <- function(mean, o_index){
   return((mean^2)/(var-mean))
 }
 
+dispersion_gpois <- function(shape, rate){
+  mean <- shape/rate
+  var <- ((mean^2)/shape) + mean
+  return(var/mean)
+}
+
 #probability of X = m given alive
 p_m_given_alive <- function(m, m_mean, m_var){
   m_shape <- shape_gpois(m_mean, m_var/m_mean)

@@ -23,13 +23,20 @@ mut_all <- mut_polymerase |>
          !(sample %in% multi_infected$sample)) |> 
     mutate(class = ifelse(n_mutations == 0, TRUE, FALSE))
 
+mut_summary <- mut_all |> 
+  filter(!class) |> 
+  select(condition, polymerase, n_mutations) |> 
+  mutate(condition = str_sub(condition, start = 1, end = 3)) |> 
+  group_by(condition, polymerase) |> 
+  summarize(mean_mut = mean(n_mutations))
+
 
 ggplot(mut_all |> filter(str_detect(condition, "Ctl")), aes(x = n_mutations,
        fill = class)) +
   geom_bar(position = "identity", alpha = 0.5) +
   theme_classic() +
   scale_fill_manual(values = c("steelblue", "grey")) +
-  labs(x = "Number of mutations per sample", title = "Control") +
+  labs(x = "number of mutations per sample", title = "Control") +
   facet_wrap(~polymerase) +
   theme(legend.position = "none")
 
@@ -39,7 +46,7 @@ ggplot(mut_all |> filter(str_detect(condition, "5um")), aes(x = n_mutations,
 geom_bar(position = "identity", alpha = 0.5) +
 theme_classic() +
 scale_fill_manual(values = c("steelblue", "grey")) +
-labs(x = "Number of mutations per sample", title = "5uM ribavirin") +
+labs(x = "number of mutations per sample", title = "5uM ribavirin") +
 facet_wrap(~polymerase) +
 theme(legend.position = "none")
 
@@ -49,7 +56,7 @@ geom_bar(position = "identity", alpha = 0.5) +
 theme_classic() +
 scale_x_continuous(breaks = c(0:4), limits = c(-0.5,4)) +
 scale_fill_manual(values = c("steelblue", "grey")) +
-labs(x = "Number of mutations per sample", title = "10uM ribavirin") +
+labs(x = "number of mutations per sample", title = "10uM ribavirin") +
 facet_wrap(~polymerase) +
 theme(legend.position = "none")
 
